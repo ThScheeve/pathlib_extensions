@@ -2,6 +2,28 @@
 Pathlib Extensions
 ==================
 
+.. raw:: html
+
+  <p align="center">
+    <a href="https://pypi.org/project/pathlib_extensions/">
+      <img src="https://img.shields.io/pypi/pyversions/pathlib_extensions" alt="Supported versions"/>
+    </a>
+    <a href="https://pypi.org/project/pathlib_extensions/">
+      <img src="https://img.shields.io/pypi/v/pathlib_extensions" alt="PyPI Package latest release"/>
+    </a>
+    <a href="https://github.com/ThScheeve/pathlib_extensions/blob/main/LICENSE">
+      <img src="https://img.shields.io/pypi/l/pathlib_extensions" alt="License"/>
+    </a>
+  </p>
+  <p align="center">
+    <a href="https://github.com/ThScheeve/pathlib_extensions/issues/">
+      <img src="https://img.shields.io/github/issues-raw/ThScheeve/pathlib_extensions" alt="Open issues"/>
+    </a>
+    <a href="https://github.com/ThScheeve/pathlib_extensions/issues">
+      <img src="https://img.shields.io/github/issues-closed-raw/ThScheeve/pathlib_extensions" alt="Closed issues"/>
+    </a>
+  </p>
+
 Overview
 ========
 

@@ -2,7 +2,7 @@ import os
 import unittest
 from test import test_pathlib, support
 
-import pathlib_extensions
+from pathlib_extensions import pathlib_extensions
 
 
 #
