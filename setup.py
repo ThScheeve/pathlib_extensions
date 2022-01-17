@@ -45,6 +45,8 @@ CLASSIFIERS = [
     "Topic :: Utilities",
 ]
 
+INSTALL_REQUIRES = ["mimetypes_extensions"]
+
 ###############################################################################
 
 HERE = pathlib.Path(__file__).resolve().parent
@@ -90,5 +92,6 @@ setup(
     packages=PACKAGES,
     package_dir={"": "src"},
     include_package_data=True,
+    install_requires=INSTALL_REQUIRES,
     python_requires=">=3.6",
 )

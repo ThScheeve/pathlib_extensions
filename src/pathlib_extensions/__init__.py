@@ -1,6 +1,6 @@
 from .pathlib_extensions import *
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 __title__ = "pathlib_extensions"
 __description__ = "Backported and Experimental Filesystem Path Features for Python 3.6+"

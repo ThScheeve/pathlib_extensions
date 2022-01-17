@@ -11,7 +11,7 @@ Pathlib Extensions
     <a href="https://pypi.org/project/pathlib_extensions/">
       <img src="https://img.shields.io/pypi/v/pathlib_extensions" alt="PyPI Package latest release"/>
     </a>
-    <a href="https://github.com/ThScheeve/pathlib_extensions/blob/main/LICENSE">
+    <a href="https://github.com/ThScheeve/pathlib_extensions/blob/master/LICENSE">
       <img src="https://img.shields.io/pypi/l/pathlib_extensions" alt="License"/>
     </a>
   </p>
@@ -40,6 +40,12 @@ Included Items
 
 This module currently contains the following:
 
+- Experimental features
+
+  - ``Path.is_image_file()``
+  - ``Path.is_audio_file()``
+  - ``Path.is_video_file()``
+
 - In ``pathlib`` since Python 3.9
 
   - ``PurePath.with_stem()``
@@ -56,6 +62,6 @@ This module currently contains the following:
 
 Running Tests
 =============
-To run tests, run ``test_pathlib_extensions.py``. You will also need to install
+To run tests, run ``tests/test_pathlib_extensions.py``. You will also need to install
 the latest version of ``pathlib`` if you are using a version of Python that
 does not include ``pathlib`` as a part of the standard library.

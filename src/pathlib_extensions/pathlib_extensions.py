@@ -1,15 +1,41 @@
 import os
 import pathlib
 
+from mimetypes_extensions import image_file_extensions, audio_file_extensions, video_file_extensions
+
 __all__ = [
     "PurePath", "PurePosixPath", "PureWindowsPath",
     "Path", "PosixPath", "WindowsPath",
 ]
 
-
 #
 # Internals
 #
+
+if hasattr(pathlib, "_IGNORED_ERROS"):
+    _IGNORED_ERROS = pathlib._IGNORED_ERROS
+else:
+    from errno import ENOENT, ENOTDIR, EBADF, ELOOP
+
+    # EBADF - guard against macOS `stat` throwing EBADF
+    _IGNORED_ERROS = (ENOENT, ENOTDIR, EBADF, ELOOP)
+
+if hasattr(pathlib, "_IGNORED_WINERRORS"):
+    _IGNORED_WINERRORS = pathlib._IGNORED_WINERRORS
+else:
+    _IGNORED_WINERRORS = (
+        21,  # ERROR_NOT_READY - drive exists but is not accessible
+        123,  # ERROR_INVALID_NAME - fix for bpo-35306
+        1921,  # ERROR_CANT_RESOLVE_FILENAME - fix for broken symlink pointing to itself
+    )
+
+if hasattr(pathlib, "_ignore_error"):
+    _ignore_error = pathlib._ignore_error
+else:
+    def _ignore_error(exception):
+        return (getattr(exception, 'errno', None) in _IGNORED_ERROS or
+                getattr(exception, 'winerror', None) in _IGNORED_WINERRORS)
+
 
 class _NormalAccessor(pathlib._NormalAccessor):
     if hasattr(os, "link"):
@@ -189,6 +215,53 @@ class Path(pathlib.Path):
             ino = self.stat().st_ino
             parent_ino = parent.stat().st_ino
             return ino == parent_ino
+
+    # Experimental functions
+
+    def is_image_file(self):
+        """
+        Whether this path is an image file.
+        """
+        try:
+            return self.is_file() and (self.suffix in image_file_extensions)
+        except OSError as e:
+            if not _ignore_error(e):
+                raise
+            # Path doesn't exist or is a broken symlink
+            return False
+        except ValueError:
+            # Non-encodable path
+            return False
+
+    def is_audio_file(self):
+        """
+        Whether this path is an audio file.
+        """
+        try:
+            return self.is_file() and (self.suffix in audio_file_extensions)
+        except OSError as e:
+            if not _ignore_error(e):
+                raise
+            # Path doesn't exist or is a broken symlink
+            return False
+        except ValueError:
+            # Non-encodable path
+            return False
+
+    def is_video_file(self):
+        """
+        Whether this path is a video file.
+        """
+        try:
+            return self.is_file() and (self.suffix in video_file_extensions)
+        except OSError as e:
+            if not _ignore_error(e):
+                raise
+            # Path doesn't exist or is a broken symlink
+            return False
+        except ValueError:
+            # Non-encodable path
+            return False
 
 
 class PosixPath(Path, PurePosixPath):

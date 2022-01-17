@@ -203,6 +203,85 @@ class WindowsPathAsPureTest(PureWindowsPathTest):
 class _BasePathTest(test_pathlib._BasePathTest):
     """Tests for the FS-accessing functionalities of the Path classes."""
 
+    # (BASE)
+    #  |
+    #  |-- audioFileA.wav
+    #  |-- brokenLink -> non-existing
+    #  |-- dirA
+    #  |   `-- linkC -> ../dirB
+    #  |-- dirB
+    #  |   |-- fileB
+    #  |   `-- linkD -> ../dirB
+    #  |-- dirC
+    #  |   |-- dirD
+    #  |   |   `-- fileD
+    #  |   `-- fileC
+    #  |-- dirE  # No permissions
+    #  |-- fileA
+    #  |-- imageFileA.bmp
+    #  |-- linkA -> fileA
+    #  |-- linkAudioA -> audioFileA.wav
+    #  |-- linkB -> dirB
+    #  |-- linkImageA -> imageFileA.bmp
+    #  |-- linkVideoA -> videoFileA.mp4
+    #  |-- brokenLinkLoop -> brokenLinkLoop
+    #  `-- videoFileA.mp4
+    #
+
+    def setUp(self):
+        super(_BasePathTest, self).setUp()
+        with open(join('imageFileA.bmp'), 'wb') as f:
+            f.write(b"this is image file A\n")
+        with open(join('audioFileA.wav'), 'wb') as f:
+            f.write(b"this is audio file A\n")
+        with open(join('videoFileA.mp4'), 'wb') as f:
+            f.write(b"this is video file A\n")
+        if support.can_symlink():
+            # Relative symlinks.
+            os.symlink('imageFileA.bmp', join('linkImageA'))
+            os.symlink('audioFileA.wav', join('linkAudioA'))
+            os.symlink('videoFileA.mp4', join('linkVideoA'))
+            # If not already defined in some version of 3.7
+            if not os.path.islink(join('brokenLinkLoop')):
+                # Broken symlink (pointing to itself).
+                os.symlink('brokenLinkLoop', join('brokenLinkLoop'))
+
+    def test_iterdir(self):
+        P = self.cls
+        p = P(BASE)
+        it = p.iterdir()
+        paths = set(it)
+        expected = ['dirA', 'dirB', 'dirC', 'dirE', 'fileA',
+                    'imageFileA.bmp', 'audioFileA.wav', 'videoFileA.mp4']
+        if support.can_symlink():
+            expected += ['linkA', 'linkB', 'brokenLink', 'brokenLinkLoop',
+                         'linkImageA', 'linkAudioA', 'linkVideoA']
+        self.assertEqual(paths, {P(BASE, q) for q in expected})
+
+    @support.skip_unless_symlink
+    def test_rglob_symlink_loop(self):
+        # Don't get fooled by symlink loops (Issue #26012)
+        P = self.cls
+        p = P(BASE)
+        given = set(p.rglob('*'))
+        expect = {'audioFileA.wav',
+                  'brokenLink',
+                  'dirA', 'dirA/linkC',
+                  'dirB', 'dirB/fileB', 'dirB/linkD',
+                  'dirC', 'dirC/dirD', 'dirC/dirD/fileD', 'dirC/fileC',
+                  'dirE',
+                  'fileA',
+                  'imageFileA.bmp',
+                  'linkA',
+                  'linkAudioA',
+                  'linkB',
+                  'linkImageA',
+                  'linkVideoA',
+                  'videoFileA.mp4',
+                  'brokenLinkLoop',
+                  }
+        self.assertEqual(given, {p / x for x in expect})
+
     # 3.9+
     if hasattr(test_pathlib._BasePathTest, "test_readlink"):
         test_readlink = test_pathlib._BasePathTest.test_readlink
@@ -274,6 +353,51 @@ class _BasePathTest(test_pathlib._BasePathTest):
                 self.assertFalse((P / 'linkA').is_mount())
             self.assertIs(self.cls('/\udfff').is_mount(), False)
             self.assertIs(self.cls('/\x00').is_mount(), False)
+
+    def test_is_image_file(self):
+        P = self.cls(BASE)
+        self.assertTrue((P / 'imageFileA.bmp').is_image_file())
+        self.assertFalse((P / 'fileA').is_image_file())
+        self.assertFalse((P / 'dirA').is_image_file())
+        self.assertFalse((P / 'non-existing').is_image_file())
+        self.assertFalse((P / 'fileA' / 'bah').is_image_file())
+        if support.can_symlink():
+            self.assertTrue((P / 'linkImageA').is_image_file())
+            self.assertFalse((P / 'linkA').is_image_file())
+            self.assertFalse((P / 'linkB').is_image_file())
+            self.assertFalse((P / 'brokenLink').is_image_file())
+        self.assertIs((P / 'fileA\udfff').is_image_file(), False)
+        self.assertIs((P / 'fileA\x00').is_image_file(), False)
+
+    def test_is_audio_file(self):
+        P = self.cls(BASE)
+        self.assertTrue((P / 'audioFileA.wav').is_audio_file())
+        self.assertFalse((P / 'fileA').is_audio_file())
+        self.assertFalse((P / 'dirA').is_audio_file())
+        self.assertFalse((P / 'non-existing').is_audio_file())
+        self.assertFalse((P / 'fileA' / 'bah').is_audio_file())
+        if support.can_symlink():
+            self.assertTrue((P / 'linkAudioA').is_audio_file())
+            self.assertFalse((P / 'linkA').is_audio_file())
+            self.assertFalse((P / 'linkB').is_audio_file())
+            self.assertFalse((P / 'brokenLink').is_audio_file())
+        self.assertIs((P / 'fileA\udfff').is_audio_file(), False)
+        self.assertIs((P / 'fileA\x00').is_audio_file(), False)
+
+    def test_is_video_file(self):
+        P = self.cls(BASE)
+        self.assertTrue((P / 'videoFileA.mp4').is_video_file())
+        self.assertFalse((P / 'fileA').is_video_file())
+        self.assertFalse((P / 'dirA').is_video_file())
+        self.assertFalse((P / 'non-existing').is_video_file())
+        self.assertFalse((P / 'fileA' / 'bah').is_video_file())
+        if support.can_symlink():
+            self.assertTrue((P / 'linkVideoA').is_video_file())
+            self.assertFalse((P / 'linkA').is_video_file())
+            self.assertFalse((P / 'linkB').is_video_file())
+            self.assertFalse((P / 'brokenLink').is_video_file())
+        self.assertIs((P / 'fileA\udfff').is_video_file(), False)
+        self.assertIs((P / 'fileA\x00').is_video_file(), False)
 
 
 class PathTest(_BasePathTest, unittest.TestCase):
