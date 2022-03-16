@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.1] - 2022-03-16
+
+### Fixed
+
+- Fixed bug where image, audio, or video files with upper case file extension are not recognized as such
+
 ## [0.2.0] - 2022-01-17
 
 ### Added

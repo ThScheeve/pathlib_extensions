@@ -179,6 +179,7 @@ class Path(pathlib.Path):
         def link_to(self, target):
             """
             Make the target path a hard link pointing to this path.
+
             Note this function does not make this path a hard link to *target*,
             despite the implication of the function and argument names. The order
             of arguments (target, link) is the reverse of Path.symlink_to, but
@@ -223,7 +224,7 @@ class Path(pathlib.Path):
         Whether this path is an image file.
         """
         try:
-            return self.is_file() and (self.suffix in image_file_extensions)
+            return self.is_file() and (self.suffix.lower() in image_file_extensions)
         except OSError as e:
             if not _ignore_error(e):
                 raise
@@ -238,7 +239,7 @@ class Path(pathlib.Path):
         Whether this path is an audio file.
         """
         try:
-            return self.is_file() and (self.suffix in audio_file_extensions)
+            return self.is_file() and (self.suffix.lower() in audio_file_extensions)
         except OSError as e:
             if not _ignore_error(e):
                 raise
@@ -253,7 +254,7 @@ class Path(pathlib.Path):
         Whether this path is a video file.
         """
         try:
-            return self.is_file() and (self.suffix in video_file_extensions)
+            return self.is_file() and (self.suffix.lower() in video_file_extensions)
         except OSError as e:
             if not _ignore_error(e):
                 raise
